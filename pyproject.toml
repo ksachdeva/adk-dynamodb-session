@@ -44,6 +44,7 @@ dev-dependencies = [
     "ruff>=0.4.8",
     "ipykernel>=6.29.5",
     "textual-dev>=1.7.0",
+    "litellm>=1.72.6.post1",
 ]
 
 [tool.ruff]
