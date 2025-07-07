@@ -35,10 +35,6 @@ class ADKEntityModel(Model):
 
     class Meta:
         table_name = "AdkTable"
-        region = "us-east-1"
-        host = "http://host.docker.internal:8009"  # Local DynamoDB endpoint
-        aws_access_key_id = "fake"
-        aws_secret_access_key = "fake"
 
     PK = UnicodeAttribute(hash_key=True)
     SK = UnicodeAttribute(range_key=True)

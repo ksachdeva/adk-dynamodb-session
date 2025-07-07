@@ -29,3 +29,9 @@ Do this from within the devcontainer
 ```bash
 uv run sample
 ```
+
+## Run tests (again local DynamoDB)
+
+```bash
+uv run poe test
+```

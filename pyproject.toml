@@ -45,8 +45,8 @@ dev-dependencies = [
     "pyright>=1.1.378",
     "mypy>=1.10.0",
     "ruff>=0.4.8",
-    
     "litellm>=1.72.6.post1",
+    "pytest-env>=1.1.5",
 ]
 
 [tool.ruff]
@@ -91,3 +91,13 @@ include = ["src", "tests", "samples"]
 reportUnnecessaryIsInstance = false
 reportMissingTypeStubs = false
 
+[tool.pytest.ini_options]
+env = [
+ "AWS_ACCESS_KEY_ID=1", 
+ "AWS_SECRET_ACCESS_KEY=2", 
+ "AWS_DEFAULT_REGION=us-east-1",
+ "AWS_ENDPOINT_URL_DYNAMODB=http://host.docker.internal:8009" 
+]
+
+[tool.poe.tasks]
+test = "pytest"
