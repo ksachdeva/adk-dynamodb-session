@@ -48,7 +48,7 @@ class ADKEntityModel(Model):
 
 class SessionModel(ADKEntityModel, discriminator="Session"):
     session_id = UnicodeAttribute()
-    state = UnicodeAttribute()
+    session_state = UnicodeAttribute()
     create_time = UnicodeAttribute()
     update_time = UnicodeAttribute()
 
@@ -72,10 +72,10 @@ class EventModel(ADKEntityModel, discriminator="Event"):
 
 
 class AppStateModel(ADKEntityModel, discriminator="AppState"):
-    state = UnicodeAttribute()
-    update_time = UnicodeAttribute()
+    app_state = UnicodeAttribute()
+    app_state_update_time = UnicodeAttribute()
 
 
 class UserStateModel(ADKEntityModel, discriminator="UserState"):
-    state = UnicodeAttribute()
-    update_time = UnicodeAttribute()
+    user_state = UnicodeAttribute()
+    user_state_update_time = UnicodeAttribute()

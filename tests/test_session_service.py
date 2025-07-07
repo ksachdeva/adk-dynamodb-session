@@ -15,7 +15,7 @@ def session_service() -> Generator[DynamoDBSessionService, None, None]:
     db_service = DynamoDBSessionService()
     db_service.create_table_if_not_exists()
     yield db_service
-    db_service.delete_table()
+    # db_service.delete_table()
 
 
 @pytest.mark.asyncio

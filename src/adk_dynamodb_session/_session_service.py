@@ -156,13 +156,13 @@ def _create_or_update_app_state(
             hash_key=_make_app_state_hash_key(app_name),
             range_key=_make_app_state_range_key(app_name),
         )
-        app_state_str = app_state_model.state or "{}"
+        app_state_str = app_state_model.app_state or "{}"
         updated_app_state = json.loads(app_state_str)
         updated_app_state.update(app_state_delta)
         app_state_model.update(
             actions=[
-                AppStateModel.state.set(json.dumps(updated_app_state)),
-                AppStateModel.update_time.set(current_time.isoformat()),
+                AppStateModel.app_state.set(json.dumps(updated_app_state)),
+                AppStateModel.app_state_update_time.set(current_time.isoformat()),
             ]
         )
     except DoesNotExist:
@@ -170,8 +170,8 @@ def _create_or_update_app_state(
         app_state_model = AppStateModel(
             hash_key=_make_app_state_hash_key(app_name),
             range_key=_make_app_state_range_key(app_name),
-            state=json.dumps(updated_app_state),
-            update_time=current_time.isoformat(),
+            app_state=json.dumps(updated_app_state),
+            app_state_update_time=current_time.isoformat(),
         )
         app_state_model.save()
 
@@ -191,7 +191,7 @@ def _get_user_state(
             hash_key=_make_user_state_hash_key(app_name, user_id),
             range_key=_make_user_state_range_key(user_id),
         )
-        return json.loads(user_state_model.state)
+        return json.loads(user_state_model.user_state)
     except DoesNotExist:
         return {}
 
@@ -208,7 +208,7 @@ def _get_app_state(
             hash_key=_make_app_state_hash_key(app_name),
             range_key=_make_app_state_range_key(app_name),
         )
-        return json.loads(app_state_model.state)
+        return json.loads(app_state_model.app_state)
     except DoesNotExist:
         return {}
 
@@ -226,13 +226,13 @@ def _create_or_update_user_state(
             hash_key=_make_user_state_hash_key(app_name, user_id),
             range_key=_make_user_state_range_key(user_id),
         )
-        user_state_str = user_state_model.state or "{}"
+        user_state_str = user_state_model.user_state or "{}"
         updated_user_state = json.loads(user_state_str)
         updated_user_state.update(user_state_delta)
         user_state_model.update(
             actions=[
-                UserStateModel.state.set(json.dumps(updated_user_state)),
-                UserStateModel.update_time.set(current_time.isoformat()),
+                UserStateModel.user_state.set(json.dumps(updated_user_state)),
+                UserStateModel.user_state_update_time.set(current_time.isoformat()),
             ]
         )
     except DoesNotExist:
@@ -240,8 +240,8 @@ def _create_or_update_user_state(
         user_state_model = UserStateModel(
             hash_key=_make_user_state_hash_key(app_name, user_id),
             range_key=_make_user_state_range_key(user_id),
-            state=json.dumps(updated_user_state),
-            update_time=current_time.isoformat(),
+            user_state=json.dumps(updated_user_state),
+            user_state_update_time=current_time.isoformat(),
         )
         user_state_model.save()
 
@@ -288,7 +288,7 @@ class DynamoDBSessionService(BaseSessionService):
             hash_key=_make_session_hash_key(session_id, app_name, user_id),
             range_key=_make_session_range_key(session_id),
             session_id=session_id,
-            state=json.dumps(session_state_delta),
+            session_state=json.dumps(session_state_delta),
             create_time=current_time.isoformat(),
             update_time=current_time.isoformat(),
         )
@@ -343,7 +343,7 @@ class DynamoDBSessionService(BaseSessionService):
             logger.warning(f"Session {session_id} for app {app_name} and user {user_id} does not exist.")
             return None
 
-        session_state = json.loads(session.state or "{}")
+        session_state = json.loads(session.session_state or "{}")
         update_time = datetime.datetime.fromisoformat(session.update_time)
 
         # now we need to get the App state and user state and merge them with the session state
@@ -408,7 +408,7 @@ class DynamoDBSessionService(BaseSessionService):
 
         sessions: list[Session] = []
         for r in results:
-            state = json.loads(r.state or "{}")
+            state = json.loads(r.session_state or "{}")
             update_time = datetime.datetime.fromisoformat(r.update_time)
 
             # in DatabaseSessionService, no events are fetched here,
@@ -465,9 +465,9 @@ class DynamoDBSessionService(BaseSessionService):
             range_key=_make_user_state_range_key(session.user_id),
         )
 
-        app_state = json.loads(app_state_model.state)
-        user_state = json.loads(user_state_model.state)
-        session_state = json.loads(session_model.state)
+        app_state = json.loads(app_state_model.app_state)
+        user_state = json.loads(user_state_model.user_state)
+        session_state = json.loads(session_model.session_state)
 
         # Extract state delta
         app_state_delta: dict[str, Any] = {}
@@ -484,23 +484,23 @@ class DynamoDBSessionService(BaseSessionService):
             app_state.update(app_state_delta)
             app_state_model.update(
                 actions=[
-                    AppStateModel.state.set(json.dumps(app_state)),
-                    AppStateModel.update_time.set(current_time.isoformat()),
+                    AppStateModel.app_state.set(json.dumps(app_state)),
+                    AppStateModel.app_state_update_time.set(current_time.isoformat()),
                 ]
             )
         if user_state_delta:
             user_state.update(user_state_delta)
             user_state_model.update(
                 actions=[
-                    UserStateModel.state.set(json.dumps(user_state)),
-                    UserStateModel.update_time.set(current_time.isoformat()),
+                    UserStateModel.user_state.set(json.dumps(user_state)),
+                    UserStateModel.user_state_update_time.set(current_time.isoformat()),
                 ]
             )
         if session_state_delta:
             session_state.update(session_state_delta)
             session_model.update(
                 actions=[
-                    SessionModel.state.set(json.dumps(session_state)),
+                    SessionModel.session_state.set(json.dumps(session_state)),
                     SessionModel.update_time.set(current_time.isoformat()),
                 ]
             )
