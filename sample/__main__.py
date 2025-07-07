@@ -62,6 +62,7 @@ async def setup_runner(agent: Agent, app_name: str, user_id: str, session_id: st
     # session_service = InMemorySessionService()  # type:ignore
     # session_service = DatabaseSessionService(db_url="sqlite:///tmp/sample_app.db")
     session_service = DynamoDBSessionService()
+    session_service.create_table_if_not_exists()
 
     await session_service.create_session(app_name=app_name, user_id=user_id, session_id=session_id)
     logger.info(f"Session created: App='{app_name}', User='{user_id}', Session='{session_id}'")
@@ -94,6 +95,10 @@ You are a philosopher with is full of positive energy and always tries to find t
 
 if __name__ == "__main__":
     os.environ["OLLAMA_API_BASE"] = "http://host.docker.internal:11434"
+    os.environ["AWS_ACCESS_KEY_ID"] = "1"
+    os.environ["AWS_SECRET_ACCESS_KEY"] = "2"
+    os.environ["AWS_DEFAULT_REGION"] = "us-east-1"
+    os.environ["AWS_ENDPOINT_URL_DYNAMODB"] = "http://host.docker.internal:8009"
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--app-name", default="app1", help="app name")
