@@ -251,10 +251,18 @@ def _create_or_update_user_state(
 class DynamoDBSessionService(BaseSessionService):
     """A session service that uses AWS DynamoDB for storage."""
 
-    def create_table_if_not_exists(self) -> None:
+    def create_table_if_not_exists(
+        self,
+        read_capacity_units: int | None = None,
+        write_capacity_units: int | None = None,
+        billing_mode: str | None = None,
+        ignore_update_ttl_errors: bool = False,
+    ) -> None:
         ADKEntityModel.create_table(
-            read_capacity_units=5,
-            write_capacity_units=5,
+            read_capacity_units=read_capacity_units or 5,
+            write_capacity_units=write_capacity_units or 5,
+            billing_mode=billing_mode,
+            ignore_update_ttl_errors=ignore_update_ttl_errors,
             wait=True,
         )
 
