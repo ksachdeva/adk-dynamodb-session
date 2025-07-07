@@ -15,6 +15,8 @@ from google.adk.runners import Runner
 from google.adk.sessions import DatabaseSessionService, InMemorySessionService
 from google.genai.types import Content, Part
 
+from adk_dynamodb_session import DynamoDBSessionService
+
 logger = logging.getLogger("sample_app")
 
 
@@ -58,7 +60,8 @@ async def call_agent(runner: Runner, user_id: str, session_id: str, query: str) 
 
 async def setup_runner(agent: Agent, app_name: str, user_id: str, session_id: str) -> Runner:
     # session_service = InMemorySessionService()  # type:ignore
-    session_service = DatabaseSessionService(db_url="sqlite:///tmp/sample_app.db")
+    # session_service = DatabaseSessionService(db_url="sqlite:///tmp/sample_app.db")
+    session_service = DynamoDBSessionService()
 
     await session_service.create_session(app_name=app_name, user_id=user_id, session_id=session_id)
     logger.info(f"Session created: App='{app_name}', User='{user_id}', Session='{session_id}'")
