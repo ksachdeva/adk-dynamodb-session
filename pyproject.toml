@@ -1,6 +1,6 @@
 [project]
 name = "adk-dynamodb-session"
-version = "0.0.1"
+version = "0.0.2"
 description = "Session Service with DynamoDB as the backend for Google ADK"
 readme = "README.md"
 authors = [

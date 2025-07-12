@@ -68,15 +68,14 @@ def _merge_state(
 
 
 def _make_session_hash_key(
-    session_id: str,
     app_name: str,
     user_id: str,
 ) -> str:
     """
     Create a hash key for the session in DynamoDB.
-    The format is: SESSION#<app_name>#<user_id>#<session_id>
+    The format is: SESSION#<app_name>#<user_id>
     """
-    return f"SESSION#{app_name}#{user_id}#{session_id}"
+    return f"SESSION#{app_name}#{user_id}"
 
 
 def _make_session_range_key(
@@ -293,7 +292,7 @@ class DynamoDBSessionService(BaseSessionService):
         updated_user_state = _create_or_update_user_state(app_name, user_id, user_state_delta, current_time)
 
         session_model = SessionModel(
-            hash_key=_make_session_hash_key(session_id, app_name, user_id),
+            hash_key=_make_session_hash_key(app_name, user_id),
             range_key=_make_session_range_key(session_id),
             session_id=session_id,
             session_state=json.dumps(session_state_delta),
@@ -323,7 +322,7 @@ class DynamoDBSessionService(BaseSessionService):
         session_id: str,
     ) -> None:
         session_model = SessionModel(
-            hash_key=_make_session_hash_key(session_id, app_name, user_id),
+            hash_key=_make_session_hash_key(app_name, user_id),
             range_key=_make_session_range_key(session_id),
         )
         session_model.delete()
@@ -344,7 +343,7 @@ class DynamoDBSessionService(BaseSessionService):
     ) -> Optional[Session]:
         try:
             session = SessionModel.get(
-                hash_key=_make_session_hash_key(session_id, app_name, user_id),
+                hash_key=_make_session_hash_key(app_name, user_id),
                 range_key=_make_session_range_key(session_id),
             )
         except DoesNotExist:
@@ -412,7 +411,7 @@ class DynamoDBSessionService(BaseSessionService):
         app_name: str,
         user_id: str,
     ) -> ListSessionsResponse:
-        results = SessionModel.query(hash_key=f"SESSION#{app_name}#{user_id}#$")
+        results = SessionModel.query(hash_key=f"SESSION#{app_name}#{user_id}")
 
         sessions: list[Session] = []
         for r in results:
@@ -446,7 +445,7 @@ class DynamoDBSessionService(BaseSessionService):
         # 3. Store event to table
 
         session_model = SessionModel.get(
-            hash_key=_make_session_hash_key(session.id, session.app_name, session.user_id),
+            hash_key=_make_session_hash_key(session.app_name, session.user_id),
             range_key=_make_session_range_key(session.id),
         )
 

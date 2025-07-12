@@ -68,6 +68,7 @@ async def test_create_and_list_sessions(session_service: DynamoDBSessionService)
 
     list_sessions_response = await session_service.list_sessions(app_name=app_name, user_id=user_id)
     sessions = list_sessions_response.sessions
+    assert len(sessions) == len(session_ids)
     for i in range(len(sessions)):
         assert sessions[i].id == session_ids[i]
 
