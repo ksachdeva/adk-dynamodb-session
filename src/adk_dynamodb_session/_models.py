@@ -1,6 +1,7 @@
 import pickle
 from typing import Any
 
+from google.adk.events import Event
 from pynamodb.attributes import (
     Attribute,
     BooleanAttribute,
@@ -48,6 +49,27 @@ class SessionModel(ADKEntityModel, discriminator="Session"):
     create_time = UnicodeAttribute()
     update_time = UnicodeAttribute()
 
+    @staticmethod
+    def make_session_hash_key(
+        app_name: str,
+        user_id: str,
+    ) -> str:
+        """
+        Create a hash key for the session in DynamoDB.
+        The format is: SESSION#<app_name>#<user_id>
+        """
+        return f"SESSION#{app_name}#{user_id}"
+
+    @staticmethod
+    def make_session_range_key(
+        session_id: str,
+    ) -> str:
+        """
+        Create a range key for the session in DynamoDB.
+        The format is: #METADATA#<session_id>
+        """
+        return f"#METADATA#{session_id}"
+
 
 class EventModel(ADKEntityModel, discriminator="Event"):
     event_id = UnicodeAttribute()
@@ -70,12 +92,67 @@ class EventModel(ADKEntityModel, discriminator="Event"):
     # but not required by ADK
     user_feedback = UnicodeAttribute(null=True)
 
+    @staticmethod
+    def make_event_hash_key(
+        session_id: str,
+        app_name: str,
+        user_id: str,
+    ) -> str:
+        """
+        Create a hash key for the event in DynamoDB.
+        The format is: Event#<app_name>#<user_id>#<session_id>
+        """
+        return f"Event#{app_name}#{user_id}#{session_id}"
+
+    @staticmethod
+    def make_event_range_key(
+        session_id: str,
+        event: Event,
+    ) -> str:
+        """
+        Create a range key for the event in DynamoDB.
+        The format is: #METADATA#<session_id>
+        """
+        return f"#METADATA#{session_id}#{event.timestamp}"
+
 
 class AppStateModel(ADKEntityModel, discriminator="AppState"):
     app_state = UnicodeAttribute()
     app_state_update_time = UnicodeAttribute()
 
+    @staticmethod
+    def make_app_state_hash_key(app_name: str) -> str:
+        """
+        Create a hash key for the app state in DynamoDB.
+        The format is: AppState#<app_name>
+        """
+        return f"AppState#{app_name}"
+
+    @staticmethod
+    def make_app_state_range_key(app_name: str) -> str:
+        """
+        Create a range key for the app state in DynamoDB.
+        The format is: #METADATA#<app_name>
+        """
+        return f"#METADATA#{app_name}"
+
 
 class UserStateModel(ADKEntityModel, discriminator="UserState"):
     user_state = UnicodeAttribute()
     user_state_update_time = UnicodeAttribute()
+
+    @staticmethod
+    def make_user_state_hash_key(app_name: str, user_id: str) -> str:
+        """
+        Create a hash key for the user state in DynamoDB.
+        The format is: UserState#<app_name>#<user_id>
+        """
+        return f"UserState#{app_name}#{user_id}"
+
+    @staticmethod
+    def make_user_state_range_key(user_id: str) -> str:
+        """
+        Create a range key for the user state in DynamoDB.
+        The format is: #METADATA#<user_id>
+        """
+        return f"#METADATA#{user_id}"

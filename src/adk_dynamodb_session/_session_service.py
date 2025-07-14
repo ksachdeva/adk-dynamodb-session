@@ -67,82 +67,6 @@ def _merge_state(
     return merged_state
 
 
-def _make_session_hash_key(
-    app_name: str,
-    user_id: str,
-) -> str:
-    """
-    Create a hash key for the session in DynamoDB.
-    The format is: SESSION#<app_name>#<user_id>
-    """
-    return f"SESSION#{app_name}#{user_id}"
-
-
-def _make_session_range_key(
-    session_id: str,
-) -> str:
-    """
-    Create a range key for the session in DynamoDB.
-    The format is: #METADATA#<session_id>
-    """
-    return f"#METADATA#{session_id}"
-
-
-def _make_app_state_hash_key(app_name: str) -> str:
-    """
-    Create a hash key for the app state in DynamoDB.
-    The format is: AppState#<app_name>
-    """
-    return f"AppState#{app_name}"
-
-
-def _make_app_state_range_key(app_name: str) -> str:
-    """
-    Create a range key for the app state in DynamoDB.
-    The format is: #METADATA#<app_name>
-    """
-    return f"#METADATA#{app_name}"
-
-
-def _make_user_state_hash_key(app_name: str, user_id: str) -> str:
-    """
-    Create a hash key for the user state in DynamoDB.
-    The format is: UserState#<app_name>#<user_id>
-    """
-    return f"UserState#{app_name}#{user_id}"
-
-
-def _make_user_state_range_key(user_id: str) -> str:
-    """
-    Create a range key for the user state in DynamoDB.
-    The format is: #METADATA#<user_id>
-    """
-    return f"#METADATA#{user_id}"
-
-
-def _make_event_hash_key(
-    session_id: str,
-    app_name: str,
-    user_id: str,
-) -> str:
-    """
-    Create a hash key for the event in DynamoDB.
-    The format is: Event#<app_name>#<user_id>#<session_id>
-    """
-    return f"Event#{app_name}#{user_id}#{session_id}"
-
-
-def _make_event_range_key(
-    session_id: str,
-    event: Event,
-) -> str:
-    """
-    Create a range key for the event in DynamoDB.
-    The format is: #METADATA#<session_id>
-    """
-    return f"#METADATA#{session_id}#{event.timestamp}"
-
-
 def _create_or_update_app_state(
     app_name: str,
     app_state_delta: dict[str, Any],
@@ -152,8 +76,8 @@ def _create_or_update_app_state(
 
     try:
         app_state_model = AppStateModel.get(
-            hash_key=_make_app_state_hash_key(app_name),
-            range_key=_make_app_state_range_key(app_name),
+            hash_key=AppStateModel.make_app_state_hash_key(app_name),
+            range_key=AppStateModel.make_app_state_range_key(app_name),
         )
         app_state_str = app_state_model.app_state or "{}"
         updated_app_state = json.loads(app_state_str)
@@ -167,8 +91,8 @@ def _create_or_update_app_state(
     except DoesNotExist:
         updated_app_state = app_state_delta
         app_state_model = AppStateModel(
-            hash_key=_make_app_state_hash_key(app_name),
-            range_key=_make_app_state_range_key(app_name),
+            hash_key=AppStateModel.make_app_state_hash_key(app_name),
+            range_key=AppStateModel.make_app_state_range_key(app_name),
             app_state=json.dumps(updated_app_state),
             app_state_update_time=current_time.isoformat(),
         )
@@ -187,8 +111,8 @@ def _get_user_state(
     """
     try:
         user_state_model = UserStateModel.get(
-            hash_key=_make_user_state_hash_key(app_name, user_id),
-            range_key=_make_user_state_range_key(user_id),
+            hash_key=UserStateModel.make_user_state_hash_key(app_name, user_id),
+            range_key=UserStateModel.make_user_state_range_key(user_id),
         )
         return json.loads(user_state_model.user_state)
     except DoesNotExist:
@@ -204,8 +128,8 @@ def _get_app_state(
     """
     try:
         app_state_model = AppStateModel.get(
-            hash_key=_make_app_state_hash_key(app_name),
-            range_key=_make_app_state_range_key(app_name),
+            hash_key=AppStateModel.make_app_state_hash_key(app_name),
+            range_key=AppStateModel.make_app_state_range_key(app_name),
         )
         return json.loads(app_state_model.app_state)
     except DoesNotExist:
@@ -222,8 +146,8 @@ def _create_or_update_user_state(
 
     try:
         user_state_model = UserStateModel.get(
-            hash_key=_make_user_state_hash_key(app_name, user_id),
-            range_key=_make_user_state_range_key(user_id),
+            hash_key=UserStateModel.make_user_state_hash_key(app_name, user_id),
+            range_key=UserStateModel.make_user_state_range_key(user_id),
         )
         user_state_str = user_state_model.user_state or "{}"
         updated_user_state = json.loads(user_state_str)
@@ -237,8 +161,8 @@ def _create_or_update_user_state(
     except DoesNotExist:
         updated_user_state = user_state_delta
         user_state_model = UserStateModel(
-            hash_key=_make_user_state_hash_key(app_name, user_id),
-            range_key=_make_user_state_range_key(user_id),
+            hash_key=UserStateModel.make_user_state_hash_key(app_name, user_id),
+            range_key=UserStateModel.make_user_state_range_key(user_id),
             user_state=json.dumps(updated_user_state),
             user_state_update_time=current_time.isoformat(),
         )
@@ -292,8 +216,8 @@ class DynamoDBSessionService(BaseSessionService):
         updated_user_state = _create_or_update_user_state(app_name, user_id, user_state_delta, current_time)
 
         session_model = SessionModel(
-            hash_key=_make_session_hash_key(app_name, user_id),
-            range_key=_make_session_range_key(session_id),
+            hash_key=SessionModel.make_session_hash_key(app_name, user_id),
+            range_key=SessionModel.make_session_range_key(session_id),
             session_id=session_id,
             session_state=json.dumps(session_state_delta),
             create_time=current_time.isoformat(),
@@ -322,13 +246,13 @@ class DynamoDBSessionService(BaseSessionService):
         session_id: str,
     ) -> None:
         session_model = SessionModel(
-            hash_key=_make_session_hash_key(app_name, user_id),
-            range_key=_make_session_range_key(session_id),
+            hash_key=SessionModel.make_session_hash_key(app_name, user_id),
+            range_key=SessionModel.make_session_range_key(session_id),
         )
         session_model.delete()
 
         # must also delete the events associated with this session
-        event_models = EventModel.query(hash_key=_make_event_hash_key(session_id, app_name, user_id))
+        event_models = EventModel.query(hash_key=EventModel.make_event_hash_key(session_id, app_name, user_id))
         for event_model in event_models:
             event_model.delete()
 
@@ -343,8 +267,8 @@ class DynamoDBSessionService(BaseSessionService):
     ) -> Optional[Session]:
         try:
             session = SessionModel.get(
-                hash_key=_make_session_hash_key(app_name, user_id),
-                range_key=_make_session_range_key(session_id),
+                hash_key=SessionModel.make_session_hash_key(app_name, user_id),
+                range_key=SessionModel.make_session_range_key(session_id),
             )
         except DoesNotExist:
             logger.warning(f"Session {session_id} for app {app_name} and user {user_id} does not exist.")
@@ -360,7 +284,7 @@ class DynamoDBSessionService(BaseSessionService):
         state = _merge_state(app_state, user_state, session_state)
 
         # fetch the events for this session
-        event_models = EventModel.query(hash_key=_make_event_hash_key(session_id, app_name, user_id))
+        event_models = EventModel.query(hash_key=EventModel.make_event_hash_key(session_id, app_name, user_id))
         events: list[Event] = []
 
         for e in event_models:
@@ -445,8 +369,8 @@ class DynamoDBSessionService(BaseSessionService):
         # 3. Store event to table
 
         session_model = SessionModel.get(
-            hash_key=_make_session_hash_key(session.app_name, session.user_id),
-            range_key=_make_session_range_key(session.id),
+            hash_key=SessionModel.make_session_hash_key(session.app_name, session.user_id),
+            range_key=SessionModel.make_session_range_key(session.id),
         )
 
         update_time = datetime.datetime.fromisoformat(session_model.update_time)
@@ -462,14 +386,14 @@ class DynamoDBSessionService(BaseSessionService):
 
         # App state
         app_state_model = AppStateModel.get(
-            hash_key=_make_app_state_hash_key(session.app_name),
-            range_key=_make_app_state_range_key(session.app_name),
+            hash_key=AppStateModel.make_app_state_hash_key(session.app_name),
+            range_key=AppStateModel.make_app_state_range_key(session.app_name),
         )
 
         # User state
         user_state_model = UserStateModel.get(
-            hash_key=_make_user_state_hash_key(session.app_name, session.user_id),
-            range_key=_make_user_state_range_key(session.user_id),
+            hash_key=UserStateModel.make_user_state_hash_key(session.app_name, session.user_id),
+            range_key=UserStateModel.make_user_state_range_key(session.user_id),
         )
 
         app_state = json.loads(app_state_model.app_state)
@@ -525,8 +449,8 @@ class DynamoDBSessionService(BaseSessionService):
             "actions": event.actions,
             "error_code": event.error_code,
             "error_message": event.error_message,
-            "hash_key": _make_event_hash_key(session.id, session.app_name, session.user_id),
-            "range_key": _make_event_range_key(session.id, event),
+            "hash_key": EventModel.make_event_hash_key(session.id, session.app_name, session.user_id),
+            "range_key": EventModel.make_event_range_key(session.id, event),
             "long_running_tool_ids": event.long_running_tool_ids,
         }
 
