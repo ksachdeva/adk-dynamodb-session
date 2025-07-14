@@ -1,3 +1,4 @@
+import os
 import pickle
 from typing import Any
 
@@ -34,8 +35,11 @@ class ADKEntityModel(Model):
     A PynamoDB model representing a session in DynamoDB.
     """
 
+    # This is not the right way but all the investigation in pynamoDB
+    # shows that this is the only way to set the table name dynamically.
+    # https://github.com/pynamodb/PynamoDB/issues/177
     class Meta:
-        table_name = "AdkTable"
+        table_name = os.environ.get("ADK_DYNAMODB_SESSION_TABLE_NAME", "adk_session")
 
     PK = UnicodeAttribute(hash_key=True)
     SK = UnicodeAttribute(range_key=True)
