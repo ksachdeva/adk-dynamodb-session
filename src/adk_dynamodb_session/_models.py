@@ -92,10 +92,6 @@ class EventModel(ADKEntityModel, discriminator="Event"):
     long_running_tool_ids = UnicodeSetAttribute(null=True)
     actions = PickleAttribute(null=True)  # For flexible event actions
 
-    # some extra attributes for the event that are generally useful
-    # but not required by ADK
-    user_feedback = UnicodeAttribute(null=True)
-
     @staticmethod
     def make_event_hash_key(
         session_id: str,
