@@ -23,6 +23,9 @@ logger = logging.getLogger("sample_app")
 def pretty_print_event(event: Event) -> None:
     logger.debug(f"[{event.author}] event, final: {event.is_final_response()}")
 
+    if not event.content or not event.content.parts:
+        return
+
     for part in event.content.parts:
         if part.text:
             logger.debug(f"  ==> text: {part.text}")

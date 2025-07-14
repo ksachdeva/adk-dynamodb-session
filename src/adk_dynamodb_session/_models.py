@@ -66,6 +66,10 @@ class EventModel(ADKEntityModel, discriminator="Event"):
     long_running_tool_ids = UnicodeSetAttribute(null=True)
     actions = PickleAttribute(null=True)  # For flexible event actions
 
+    # some extra attributes for the event that are generally useful
+    # but not required by ADK
+    user_feedback = UnicodeAttribute(null=True)
+
 
 class AppStateModel(ADKEntityModel, discriminator="AppState"):
     app_state = UnicodeAttribute()
