@@ -8,7 +8,7 @@ resolution-markers = [
 
 [[package]]
 name = "adk-dynamodb-session"
-version = "0.0.3"
+version = "0.0.4"
 source = { editable = "." }
 dependencies = [
     { name = "boto3" },
