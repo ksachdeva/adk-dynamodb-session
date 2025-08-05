@@ -1,6 +1,6 @@
 [project]
 name = "adk-dynamodb-session"
-version = "0.0.4"
+version = "0.0.5"
 description = "Session Service with DynamoDB as the backend for Google ADK"
 readme = "README.md"
 authors = [
@@ -96,7 +96,8 @@ env = [
  "AWS_ACCESS_KEY_ID=1", 
  "AWS_SECRET_ACCESS_KEY=2", 
  "AWS_DEFAULT_REGION=us-east-1",
- "AWS_ENDPOINT_URL_DYNAMODB=http://host.docker.internal:8009" 
+ "AWS_ENDPOINT_URL_DYNAMODB=http://host.docker.internal:8009",
+ "ADK_DYNAMODB_SESSION_TABLE_NAME=adk-test-session-table", 
 ]
 
 [tool.poe.tasks]

@@ -472,6 +472,9 @@ class DynamoDBSessionService(BaseSessionService):
 
         event_model.save()
 
+        # Update timestamp with commit time
+        session.last_update_time = current_time.timestamp()
+
         # Also update the in-memory session
         await super().append_event(session=session, event=event)
 
