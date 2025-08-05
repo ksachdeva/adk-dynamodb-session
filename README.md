@@ -1,4 +1,4 @@
-# DynamoDB as the backed for Session Service
+# DynamoDB as the backend for Session Service
 
 This package provides the implementation of `BaseSessionService` in Google ADK that
 uses DynamoDB as the backend
